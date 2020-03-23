@@ -1,23 +1,30 @@
 package my_code.rest_service.controller;
 
+import javax.persistence.*;
+
+@Entity
 public class Girl {
-    private String id;
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Integer id;
+    @Column(name = "name")
     private String name;
 
-    public String getName() {
-        return name;
-    }
+    public Girl() { }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public Girl(String name){ this.name = name; }
 
-    public String getId() {
-        return id;
-    }
+    public Integer getId() { return id; }
 
-    public Girl(String str, String number){
-        this.name = str;
-        this.id = number;
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+
+    @Override
+    public String toString() {
+        return "Girl{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

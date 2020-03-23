@@ -1,55 +1,60 @@
 package my_code.rest_service.controller;
 
 import my_code.rest_service.exceptions.NotFoundException;
+import my_code.rest_service.interfaces.GirlRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.websocket.server.PathParam;
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("girls")
 public class MessageController {
-    private Integer count = 4;
-    private List<Girl> girls = new ArrayList<Girl>(){{
-        add(new Girl("Natasha", "1"));
-        add(new Girl("Sveta", "2"));
-        add(new Girl("Liza", "3"));
-    }};
+    @Autowired
+    private GirlRepo girlRepo;
+
     @GetMapping
     public List<Girl> list(){
-        return girls;
+        Iterable<Girl> girls = girlRepo.findAll();
+        List<Girl> list = new ArrayList<>();
+        for (Girl girl : girls) {
+            list.add(girl);
+        }
+        return list;
     }
+
     @GetMapping("{id}")
-    public Girl getOne(@PathVariable String id){
-        return getGirl(id);
+    public String getOne (@PathVariable String id){
+        return getGirl(id).toString();
     }
 
     private Girl getGirl(String id) {
-        return girls.stream()
-                .filter(girl -> girl.getId().equals(id))
-                .findFirst()
-                .orElseThrow(NotFoundException::new);
+        return girlRepo.findById(Integer.parseInt(id)).orElseThrow(NotFoundException::new);
     }
 
-    @PostMapping
-    public Girl create(@RequestBody String name){
-        Girl girl = new Girl(name, String.valueOf(count++));
-        girls.add(girl);
-
-        return girl;
+    @PostMapping("{name}")
+    public String create(@PathVariable String name){
+        Girl girl = new Girl(name);
+        girlRepo.save(girl);
+        return girl.toString() + " saved";
     }
 
     @PutMapping("{id}")
-    public Girl put(@PathVariable String id, @RequestBody String name){
+    public String put(@PathVariable String id, @PathParam("{name}") String name){
         Girl currentGirl = getGirl(id);
         currentGirl.setName(name);
-        return currentGirl;
+        girlRepo.save(currentGirl);
+        return currentGirl.toString() + " put";
     }
 
     @DeleteMapping("{id}")
-    public void delete(@PathVariable String id){
+    public String delete(@PathVariable String id){
         Girl currentGirl = getGirl(id);
-        girls.remove(currentGirl);
+        girlRepo.delete(currentGirl);
+        return (currentGirl.toString() + " killed");
     }
 
 }
